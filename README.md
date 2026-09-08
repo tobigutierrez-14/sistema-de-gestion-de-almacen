@@ -1,11 +1,16 @@
-# sistema-de-gestiÃ³n-de-almacen
-Proyecto integrador para la materia **MetodologÃ­as de ProgramaciÃ³n II (UNAJ)**.
+# Sistema de Gestión de Almacén
 
-## ğŸ‘¥ Integrantes
-* **Ruiz, Gonzalo Rodrigo** - ComisiÃ³n 1
-* **Gutierrez, Tobias Jonas** - ComisiÃ³n 1
+Proyecto integrador para la materia Metodologías de Programación II (UNAJ).
 
-## ğŸ› ï¸ TecnologÃ­as y MetodologÃ­a
-* **MetodologÃ­a:** Scrum (Tablero en Trello)
-* **Lenguaje:** C# (.NET)
-* **Interfaz:** ASP.NET Core (Web sencilla)
+## ?? Integrantes
+- Ruiz, Gonzalo Rodrigo - Comisión 1
+- Gutierrez, Tobias Jonas - Comisión 1
+
+## ??? Tecnologías y Metodología
+- **Metodología:** Scrum (Tablero en Trello)
+- **Lenguaje:** C# (.NET)
+- **Interfaz:** ASP.NET Core (Web sencilla)
+
+## ?? Ejecución y Pruebas
+- Para ejecutar el proyecto web: `dotnet run --project src/SistemaGestion.Web`
+- Para ejecutar las pruebas unitarias: `dotnet test`
