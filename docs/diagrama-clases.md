@@ -1,4 +1,3 @@
-
 # Diagrama de Clases del Dominio
 
 ```mermaid
@@ -7,8 +6,11 @@ classDiagram
         -int id
         -string nombre
         -string descripcion
-        +agregarProducto(Producto producto)
-        +quitarProducto(Producto producto)
+        +actualizarNombre(string nuevoNombre) void
+        +actualizarDescripcion(string nuevaDescripcion) void
+        +obtenerId() int
+        +obtenerNombre() string
+        +obtenerDescripcion() string
     }
 
     class Proveedor {
@@ -33,25 +35,61 @@ classDiagram
     class Producto {
         -int id
         -string nombre
+        -string descripcion
         -double precio
         -int stock
-        -int stocMinimo
+        -int stockMinimo
         -Categoria categoria
-        +aumentarStock(int cantidad)
-        +disminuirStock(int cantidad)
+        +aumentarStock(int cantidad) void
+        +disminuirStock(int cantidad) void
+        +hayStockDisponible(int cantidad) bool
         +necesitaReposicion() bool
-        +actualizarPrecio(double nuevoPrecio)
+        +actualizarPrecio(double nuevoPrecio) void
+        +obtenerStock() int
+        +obtenerPrecio() double
+        +obtenerNombre() string
+        +obtenerCategoria() Categoria
+    }
+
+    class TipoMedioPago {
+        <<enumeration>>
+        EFECTIVO
+        TARJETA_DEBITO
+        TARJETA_CREDITO
+        TRANSFERENCIA
+    }
+
+    class EstadoVenta {
+        <<enumeration>>
+        PENDIENTE
+        CONFIRMADA
+        CANCELADA
+    }
+
+    class MedioPago {
+        -int id
+        -TipoMedioPago tipo
+        -string descripcion
+        +actualizarDescripcion(string nuevaDescripcion) void
+        +obtenerId() int
+        +obtenerTipo() TipoMedioPago
+        +obtenerDescripcion() string
     }
 
     class Venta {
         -int id
-        -string fecha
+        -DateTime fecha
         -Cliente cliente
         -List~DetalleVenta~ detalles
         -MedioPago medioPago
-        +agregarDetalle(DetalleVenta detalle)
+        -EstadoVenta estado
+        +agregarDetalle(DetalleVenta detalle) void
         +calcularTotal() decimal
-        +confirmarVenta()
+        +confirmarVenta() void
+        +cancelarVenta() void
+        +obtenerDetalles() List~DetalleVenta~
+        +obtenerEstado() EstadoVenta
+        +obtenerCliente() Cliente
     }
 
     class DetalleVenta {
@@ -70,11 +108,6 @@ classDiagram
         -Producto producto
     }
 
-    class MedioPago {
-        -int id
-        -string nombre
-    }
-
     Categoria "1" --> "0..*" Producto
     Proveedor "1" --> "0..*" Producto
     Cliente "1" --> "0..*" Venta
@@ -82,4 +115,6 @@ classDiagram
     Producto "1" <-- "0..*" MovimientoStock
     Venta "1" *-- "1..*" DetalleVenta
     Venta "0..*" --> "1" MedioPago
+    MedioPago --> TipoMedioPago
+    Venta --> EstadoVenta
 ```
