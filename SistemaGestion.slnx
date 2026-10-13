@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SistemaGestion.Web/SistemaGestion.Web.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SistemaGestion.Tests/SistemaGestion.Tests.csproj" />
   </Folder>
