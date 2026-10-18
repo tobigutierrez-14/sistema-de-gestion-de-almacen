@@ -1,6 +1,6 @@
 using System;
 using Xunit;
-using SistemaGestion.Web;
+using SistemaGestion.Web.Models;
 
 namespace SistemaGestion.Tests;
 
@@ -24,6 +24,7 @@ public class ClienteTests
         Assert.Equal(telefonoEsperado, cliente.getTelefono());
         Assert.Equal(emailEsperado, cliente.getEmail());
         Assert.True(cliente.getId() > 0);
+        Assert.Empty(cliente.getHistorialCompras()); // Verificamos que el historial de compras esté vacío al inicio
     }
 
     [Fact]
@@ -49,5 +50,41 @@ public class ClienteTests
 
         // 2 y 3. Act & Assert: verificamos que se defienda lanzando la excepción
         Assert.Throws<ArgumentException>(() => new Cliente("Carlos Lopez", dniInvalido, "11223344", "carlos@mail.com"));
+    }
+
+    [Fact]
+    public void CrearCliente_ConDatosInvalidos_LanzaArgumentException()
+    {
+        Assert.Throws<ArgumentException>(() => new Cliente("", "35123456"));
+        Assert.Throws<ArgumentException>(() => new Cliente("   ", "35123456"));
+        Assert.Throws<ArgumentException>(() => new Cliente("Carlos", "0"));
+        Assert.Throws<ArgumentException>(() => new Cliente("Carlos", "-10"));
+    }
+
+    [Fact]
+    public void RegistrarCompra_ConVentaValida_CalculaTotalComprado()
+    {
+        // Caso normal de interacción con Venta
+        var cliente = new Cliente("Maria Lopez", 30123456);
+        var categoria = new Categoria(1, "Bebidas", "Gaseosas");
+        var producto = new Producto(1, "Agua 500ml", "Mineral", 100m, 50, 5, categoria);
+        var medioPago = new MedioPago(1, TipoMedioPago.TarjetaCredito, "Visa");
+
+        var venta = new Venta(1, DateTime.Now, cliente, medioPago);
+        venta.AgregarDetalle(new DetalleVenta(producto, 2, 100m));
+
+        cliente.registrarCompra(venta);
+
+        Assert.Single(cliente.getHistorialCompras());
+        Assert.Equal(200m, cliente.calcularTotalCompras());
+    }
+
+    [Fact]
+    public void RegistrarCompra_ConVentaNula_LanzaArgumentNullException()
+    {
+        // Caso error de interacción
+        var cliente = new Cliente("Maria Lopez", 30123456);
+
+        Assert.Throws<ArgumentNullException>(() => cliente.registrarCompra(null!));
     }
 }
