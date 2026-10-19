@@ -1,0 +1,40 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    ViewData["Seccion"] = "dashboard";
+    var cultura = System.Globalization.CultureInfo.GetCultureInfo("es-AR");
+}
+<div class="page-heading">
+    <div><p class="eyebrow">RESUMEN GENERAL</p><h1>Tu negocio, de un vistazo<span class="title-dot">.</span></h1><p class="subtitle">Revisá los indicadores principales y la actividad de tu almacén.</p></div>
+    <span class="demo-note">Valores ilustrativos · sin datos reales</span>
+</div>
+<section class="metrics" aria-label="Indicadores principales">
+    <article class="metric-card"><div class="metric-head"><span>Total de productos</span><span class="metric-symbol">▦</span></div><div class="metric-value">@Model.TotalProductos</div><p class="metric-footer">Productos en catálogo</p></article>
+    <article class="metric-card"><div class="metric-head"><span>Ventas del día</span><span class="metric-symbol">▣</span></div><div class="metric-value">"Pendiente"</div><p class="metric-footer">Operaciones de ejemplo</p></article>
+    <article class="metric-card"><div class="metric-head"><span>Ingresos del día</span><span class="metric-symbol">↗</span></div><div class="metric-value currency">"Pendiente"</div><p class="metric-footer">Montos de demostración</p></article>
+    <article class="metric-card warning"><div class="metric-head"><span>Stock bajo</span><span class="metric-symbol">!</span></div><div class="metric-value">@Model.ProductosBajoStock</div><p class="metric-footer">Productos para revisar</p></article>
+</section>
+<div class="dashboard-grid">
+    <section class="panel activity-panel" aria-labelledby="actividad-title">
+        <div class="panel-head"><div><p class="eyebrow">MOVIMIENTOS</p><h2 id="actividad-title">Actividad reciente</h2></div><span class="soft-chip">Ejemplo</span></div>
+        <div class="activity-list">
+            @foreach (var item in Model.Actividades)
+            {
+                <div class="activity-item"><span class="activity-symbol @item.Tipo">@(item.Tipo == "venta" ? "↗" : item.Tipo == "stock" ? "⇄" : "+")</span><div class="activity-copy"><strong>@item.Titulo</strong><span>@item.Detalle</span></div><time>@item.Hora</time></div>
+            }
+        </div>
+        <a class="panel-link" asp-controller="Secciones" asp-action="Index" asp-route-seccion="ventas">Ir a ventas <span>→</span></a>
+    </section>
+    <section class="panel" aria-labelledby="stock-title">
+        <div class="panel-head"><div><p class="eyebrow">INVENTARIO</p><h2 id="stock-title">Atención al stock</h2></div><span class="alert-counter">@Model.ProductosBajoStock alertas</span></div>
+        <p class="panel-description">Estos productos necesitarían reposición.</p>
+        <div class="stock-list">
+            @foreach (var item in Model.Alertas)
+            {
+                <div class="stock-item"><div><strong>@item.Nombre</strong><span>@item.Presentacion</span></div><span class="stock-quantity">@item.Unidades un.</span></div>
+            }
+        </div>
+        <a class="panel-link" asp-controller="Secciones" asp-action="Index" asp-route-seccion="stock">Ver movimientos <span>→</span></a>
+    </section>
+</div>
+<section class="quick-access" aria-labelledby="quick-title"><div><p class="eyebrow">ACCESOS RÁPIDOS</p><h2 id="quick-title">¿Qué necesitás hacer?</h2></div><div class="quick-actions"><a asp-controller="Productos" asp-action="Index">＋ Gestionar productos</a><a asp-controller="Secciones" asp-action="Index" asp-route-seccion="ventas">↗ Consultar ventas</a><a asp-controller="Secciones" asp-action="Index" asp-route-seccion="stock">⇄ Consultar stock</a></div></section>

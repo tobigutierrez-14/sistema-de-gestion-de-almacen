@@ -1,0 +1,26 @@
+@model ProductoFormViewModel
+@{
+    var editando = Model.Id > 0;
+    ViewData["Seccion"] = "productos";
+    var titulo = editando ? "Editar producto" : "Nuevo producto";
+    ViewData["Title"] = titulo;
+}
+<div class="page-heading">
+  <div><p class="eyebrow">INVENTARIO / PRODUCTOS</p><h1>@titulo<span class="title-dot">.</span></h1><p class="subtitle">@(editando ? "Modificá los datos del producto." : "Completá los datos para registrar un producto.")</p></div>
+  <a class="clear-filter" asp-action="Index">← Volver al listado</a>
+</div>
+<form method="post" asp-action="@(editando ? "Editar" : "Crear")" asp-route-id="@(editando ? Model.Id : (int?)null)" class="panel product-form">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="validation-error"></div>
+    <div class="form-section-title">Información del producto</div>
+    <div class="form-grid">
+      <div class="form-field full"><label asp-for="Nombre">Nombre del producto *</label><input asp-for="Nombre" maxlength="100" placeholder="Ej. Arroz largo fino 1 kg" /><span asp-validation-for="Nombre"></span></div>
+      <div class="form-field full"><label asp-for="Descripcion">Descripción</label><textarea asp-for="Descripcion" maxlength="400" rows="3" placeholder="Presentación o información adicional"></textarea><span asp-validation-for="Descripcion"></span></div>
+      <div class="form-field"><label asp-for="CategoriaId">Categoría *</label><select asp-for="CategoriaId" asp-items="@(ViewData["Categorias"] as IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)"><option value="0">Seleccioná una categoría</option></select><span asp-validation-for="CategoriaId"></span></div>
+      <div class="form-field"><label asp-for="Precio">Precio (ARS) *</label><input asp-for="Precio" type="number" min="0" max="999999999" step="0.01" /><span asp-validation-for="Precio"></span></div>
+      <div class="form-field"><label asp-for="Stock">Stock actual *</label><input asp-for="Stock" type="number" min="0" step="1" /><span asp-validation-for="Stock"></span></div>
+      <div class="form-field"><label asp-for="StockMinimo">Stock mínimo *</label><input asp-for="StockMinimo" type="number" min="0" step="1" /><span asp-validation-for="StockMinimo"></span></div>
+    </div>
+    <p class="form-hint">Un producto muestra la alerta “Reponer” cuando su stock es menor o igual al mínimo.</p>
+    <div class="form-actions"><a class="action-secondary" asp-action="Index">Cancelar</a><button class="action-primary" type="submit">@(editando ? "Guardar cambios" : "Registrar producto")</button></div>
+</form>

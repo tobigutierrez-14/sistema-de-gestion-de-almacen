@@ -1,0 +1,51 @@
+@{
+    var active = (ViewData["Seccion"] as string) ?? "dashboard";
+    var title = (ViewData["Title"] as string) ?? "Dashboard";
+}
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f7f8f7" />
+    <title>@title · Almacén</title>
+    <link rel="stylesheet" asp-append-version="true" href="~/css/site.css" />
+</head>
+<body>
+    <div class="app-shell">
+        <div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
+        <aside class="sidebar" id="sidebar" aria-label="Menú principal">
+            <a class="brand" asp-controller="Home" asp-action="Index" aria-label="Ir al inicio">
+                <span class="brand-icon">A<span>.</span></span>
+                <span><strong>almacén</strong><small>panel de gestión</small></span>
+            </a>
+            <div class="sidebar-divider"></div>
+            <nav class="nav" aria-label="Navegación">
+                <p class="nav-caption">GENERAL</p>
+                <a class="nav-link @(active == "dashboard" ? "is-active" : "")" asp-controller="Home" asp-action="Index" aria-current="@(active == "dashboard" ? "page" : null)"><span class="nav-icon">◫</span>Dashboard</a>
+                <p class="nav-caption nav-section">GESTIÓN</p>
+                <a class="nav-link @(active == "productos" ? "is-active" : "")" asp-controller="Productos" asp-action="Index"><span class="nav-icon">▦</span>Productos</a>
+                <a class="nav-link @(active == "categorias" ? "is-active" : "")" asp-controller="Secciones" asp-action="Index" asp-route-seccion="categorias"><span class="nav-icon">▤</span>Categorías</a>
+                <a class="nav-link @(active == "ventas" ? "is-active" : "")" asp-controller="Secciones" asp-action="Index" asp-route-seccion="ventas"><span class="nav-icon">▣</span>Ventas</a>
+                <a class="nav-link @(active == "stock" ? "is-active" : "")" asp-controller="Secciones" asp-action="Index" asp-route-seccion="stock"><span class="nav-icon">⇄</span>Movimientos de stock</a>
+                <p class="nav-caption nav-section">CONTACTOS</p>
+                <a class="nav-link @(active == "clientes" ? "is-active" : "")" asp-controller="Secciones" asp-action="Index" asp-route-seccion="clientes"><span class="nav-icon">♙</span>Clientes</a>
+                <a class="nav-link @(active == "proveedores" ? "is-active" : "")" asp-controller="Secciones" asp-action="Index" asp-route-seccion="proveedores"><span class="nav-icon">▧</span>Proveedores</a>
+            </nav>
+            <div class="sidebar-bottom"><span class="online-dot"></span> Versión de demostración <small>Sin conexión a base de datos</small></div>
+        </aside>
+        <div class="workspace">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" type="button" id="menuToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="sidebar">☰</button>
+                    <span class="breadcrumb">Panel <span>/</span> <strong>@title</strong></span>
+                </div>
+                <div class="topbar-right"><span class="environment-pill">ENTORNO DEMO</span><span class="user-avatar" aria-label="Usuario administrador">AD</span></div>
+            </header>
+            <main class="main-content" id="main-content">@RenderBody()</main>
+        </div>
+    </div>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,39 @@
+@model ProductosIndexViewModel
+@{
+    ViewData["Title"] = "Productos";
+    ViewData["Seccion"] = "productos";
+    var cultura = System.Globalization.CultureInfo.GetCultureInfo("es-AR");
+}
+<div class="page-heading product-heading">
+    <div><p class="eyebrow">INVENTARIO / CATÁLOGO</p><h1>Productos<span class="title-dot">.</span></h1><p class="subtitle">Consultá, organizá y actualizá el catálogo de tu almacén.</p></div>
+    <a class="action-primary" asp-action="Crear">＋ Nuevo producto</a>
+</div>
+@if (TempData["Exito"] is string exito) { <div class="notice-success" role="status">✓ @exito</div> }
+<div class="products-summary">
+    <div class="summary-tile"><span>Productos registrados</span><strong>@Model.Total</strong></div>
+    <div class="summary-tile"><span>Necesitan reposición</span><strong class="danger-text">@Model.BajoStock</strong></div>
+    <div class="summary-tile"><span>Resultados del filtro</span><strong>@Model.Productos.Count</strong></div>
+</div>
+<section class="panel product-panel" aria-label="Listado de productos">
+    <form method="get" asp-action="Index" class="product-filters">
+        <label class="filter-search"><span class="sr-only">Buscar productos</span><input name="busqueda" value="@Model.Busqueda" placeholder="Buscar nombre o descripción…" /></label>
+        <label class="sr-only" for="categoriaFiltro">Categoría</label>
+        <select id="categoriaFiltro" name="categoriaId"><option value="">Todas las categorías</option>
+            @foreach (var categoria in Model.Categorias) { <option value="@categoria.Id" selected="@(Model.CategoriaId == categoria.Id)">@categoria.Nombre</option> }
+        </select>
+        <label class="sr-only" for="estadoFiltro">Estado de stock</label>
+        <select id="estadoFiltro" name="estado"><option value="todos" selected="@(Model.Estado == "todos")">Todos los estados</option><option value="normal" selected="@(Model.Estado == "normal")">Stock normal</option><option value="bajo" selected="@(Model.Estado == "bajo")">Stock bajo</option></select>
+        <button class="filter-button" type="submit">Filtrar</button>
+        <a class="clear-filter" asp-action="Index">Limpiar</a>
+    </form>
+    <div class="table-scroll"><table class="product-table">
+        <thead><tr><th>PRODUCTO</th><th>CATEGORÍA</th><th>PRECIO</th><th>STOCK</th><th>ESTADO</th><th><span class="sr-only">Acciones</span></th></tr></thead>
+        <tbody>
+        @foreach (var producto in Model.Productos) {
+            <tr><td><strong>@producto.Nombre</strong><small>@producto.Descripcion</small></td><td>@producto.Categoria</td><td>@producto.Precio.ToString("C2", cultura)</td><td>@producto.Stock un.</td><td><span class="stock-badge @(producto.StockBajo ? "is-low" : "is-ok")">@(producto.StockBajo ? "Reponer" : "Disponible")</span></td><td><a class="edit-link" asp-action="Editar" asp-route-id="@producto.Id">Editar →</a></td></tr>
+        }
+        @if (!Model.Productos.Any()) { <tr><td colspan="6" class="no-results">No encontramos productos con esos filtros.</td></tr> }
+        </tbody>
+    </table></div>
+    <div class="table-footer">Mostrando @Model.Productos.Count de @Model.Total productos <span>Datos en memoria · demostración</span></div>
+</section>
