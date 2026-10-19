@@ -87,7 +87,20 @@ namespace SistemaGestion.Web.Models
             }
             this.Nombre = nuevoNombre;
         }
-        
+        public void actualizarDescripcion(string nuevaDescripcion)
+        {
+            this.Descripcion = nuevaDescripcion ?? string.Empty;
+        }
+        public void actualizarStockMinimo(int nuevoStockMinimo)
+        {
+            if (nuevoStockMinimo < 0)
+                throw new ArgumentException("El stock mínimo no puede ser negativo.");
+            this.StockMinimo = nuevoStockMinimo;
+        }
+        public void actualizarCategoria(Categoria nuevaCategoria)
+        {
+            this.Categoria = nuevaCategoria ?? throw new ArgumentNullException(nameof(nuevaCategoria));
+        }                
         public int obtenerStock()
         {
             return this.Stock;
@@ -104,6 +117,14 @@ namespace SistemaGestion.Web.Models
         public Categoria obtenerCategoria()
         {
             return this.Categoria;
+        }
+        public string obtenerDescripcion()
+        {
+            return this.Descripcion;
+        }
+        public int obtenerStockMinimo()
+        {
+            return this.StockMinimo;
         }
     }
 }
