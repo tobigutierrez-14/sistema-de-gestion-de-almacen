@@ -27,7 +27,7 @@
                 <a class="nav-link @(active == "productos" ? "is-active" : "")" asp-controller="Productos" asp-action="Index"><span class="nav-icon">▦</span>Productos</a>
                 <a class="nav-link @(active == "categorias" ? "is-active" : "")" asp-controller="Categorias" asp-action="Index"><span class="nav-icon">▤</span>Categorías</a>
                 <a class="nav-link @(active == "ventas" ? "is-active" : "")" asp-controller="Secciones" asp-action="Index" asp-route-seccion="ventas"><span class="nav-icon">▣</span>Ventas</a>
-                <a class="nav-link @(active == "stock" ? "is-active" : "")" asp-controller="Secciones" asp-action="Index" asp-route-seccion="stock"><span class="nav-icon">⇄</span>Movimientos de stock</a>
+                <a class="nav-link @(active == "stock" ? "is-active" : "")" asp-controller="Stock" asp-action="Index" asp-route-seccion="stock"><span class="nav-icon">⇄</span>Movimientos de stock</a>
                 <p class="nav-caption nav-section">CONTACTOS</p>
                 <a class="nav-link @(active == "clientes" ? "is-active" : "")" asp-controller="Secciones" asp-action="Index" asp-route-seccion="clientes"><span class="nav-icon">♙</span>Clientes</a>
                 <a class="nav-link @(active == "proveedores" ? "is-active" : "")" asp-controller="Secciones" asp-action="Index" asp-route-seccion="proveedores"><span class="nav-icon">▧</span>Proveedores</a>

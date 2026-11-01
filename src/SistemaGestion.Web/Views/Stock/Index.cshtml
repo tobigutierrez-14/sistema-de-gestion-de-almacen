@@ -1,0 +1,36 @@
+@model StockIndexViewModel
+@{
+    ViewData["Title"] = "Stock";
+    ViewData["Seccion"] = "stock";
+}
+<div class="page-heading product-heading">
+ <div><p class="eyebrow">INVENTARIO / MOVIMIENTOS</p><h1>Control de stock<span class="title-dot">.</span></h1><p class="subtitle">Consultá existencias, registrá ingresos y egresos y revisá los movimientos.</p></div>
+ <a class="action-primary" asp-action="Registrar">＋ Nuevo movimiento</a>
+</div>
+@if (TempData["Exito"] is string exito) { <div class="notice-success" role="status">✓ @exito</div> }
+<div class="products-summary" aria-label="Resumen de existencias">
+ <article class="summary-tile"><span>Productos registrados</span><strong>@Model.TotalProductos</strong></article>
+ <article class="summary-tile"><span>Unidades en existencia</span><strong>@Model.TotalUnidades</strong></article>
+ <article class="summary-tile"><span>Productos para reponer</span><strong class="danger-text">@Model.ProductosBajoStock</strong></article>
+</div>
+<section class="panel product-panel" aria-label="Existencias por producto">
+ <div class="stock-section-heading"><h2>Existencias por producto</h2><span>Datos compartidos con Productos</span></div>
+ <form method="get" asp-action="Index" class="product-filters">
+  <label class="filter-search"><span class="sr-only">Buscar producto</span><input name="busqueda" value="@Model.Busqueda" placeholder="Buscar producto…" /></label>
+  <select name="categoriaId" aria-label="Filtrar por categoría"><option value="">Todas las categorías</option>@foreach (var c in Model.Categorias) { <option value="@c.Id" selected="@(Model.CategoriaId == c.Id)">@c.Nombre</option> }</select>
+  <select name="estado" aria-label="Filtrar por estado"><option value="todos">Todos los estados</option><option value="bajo" selected="@(Model.Estado == "bajo")">Necesitan reposición</option><option value="normal" selected="@(Model.Estado == "normal")">Stock normal</option></select>
+  <button class="filter-button" type="submit">Filtrar</button><a class="clear-filter" asp-action="Index">Limpiar</a>
+ </form>
+ <div class="table-scroll"><table class="product-table"><thead><tr><th>PRODUCTO</th><th>CATEGORÍA</th><th>STOCK ACTUAL</th><th>STOCK MÍNIMO</th><th>ESTADO</th><th>ACCIÓN</th></tr></thead><tbody>
+ @foreach (var p in Model.Productos) { <tr><td><strong>@p.Nombre</strong></td><td>@p.Categoria</td><td><strong>@p.Stock</strong></td><td>@p.StockMinimo</td><td><span class="stock-badge @(p.StockBajo ? "is-low" : "is-ok")">@(p.StockBajo ? "Reponer" : "Normal")</span></td><td><a class="edit-link" asp-action="Registrar" asp-route-productoId="@p.Id">Registrar →</a></td></tr> }
+ @if (Model.Productos.Count == 0) { <tr><td colspan="6" class="no-results">No hay productos para los filtros seleccionados.</td></tr> }
+ </tbody></table></div><div class="table-footer">@Model.Productos.Count productos encontrados<span>Stock actualizado en memoria</span></div>
+</section>
+<section class="panel product-panel stock-history" aria-label="Historial de movimientos">
+ <div class="stock-section-heading"><div><h2>Historial de movimientos</h2><p class="stock-helper">Se registran los movimientos nuevos y los ajustes realizados desde Productos. El stock inicial es un dato de ejemplo.</p></div></div>
+ <form method="get" asp-action="Index" class="product-filters"><label class="form-field stock-type-filter"><span class="sr-only">Tipo de movimiento</span><select name="tipo"><option value="todos">Todos los movimientos</option><option value="INGRESO" selected="@(Model.Tipo == "INGRESO")">Ingresos</option><option value="EGRESO" selected="@(Model.Tipo == "EGRESO")">Egresos</option></select></label><button class="filter-button" type="submit">Filtrar historial</button></form>
+ <div class="table-scroll"><table class="product-table"><thead><tr><th>FECHA</th><th>PRODUCTO</th><th>TIPO</th><th>CANTIDAD</th><th>MOTIVO</th></tr></thead><tbody>
+ @foreach(var m in Model.Movimientos) { <tr><td>@(DateTime.TryParseExact(m.Fecha, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var fechaMovimiento) ? fechaMovimiento.ToString("dd/MM/yyyy", new System.Globalization.CultureInfo("es-AR")) : m.Fecha)</td><td><strong>@m.Producto</strong></td><td><span class="stock-badge @(m.Tipo == "EGRESO" ? "is-low" : "is-ok")">@(m.Tipo == "INGRESO" ? "Ingreso" : "Egreso")</span></td><td>@(m.Tipo == "INGRESO" ? "+" : "−")@m.Cantidad</td><td>@m.Motivo</td></tr> }
+ @if (Model.Movimientos.Count == 0) { <tr><td colspan="5" class="no-results">Todavía no hay movimientos registrados.</td></tr> }
+ </tbody></table></div><div class="table-footer">@Model.Movimientos.Count movimientos<span>Datos en memoria · demostración</span></div>
+</section>
