@@ -1,0 +1,80 @@
+@model IReadOnlyList<CategoriaFilaViewModel>
+@{
+    ViewData["Title"] = "Categorías";
+    ViewData["Seccion"] = "categorias";
+    var busqueda = ViewData["Busqueda"] as string ?? "";
+}
+<div class="page-heading product-heading">
+    <div>
+        <p class="eyebrow">INVENTARIO / CATÁLOGO</p>
+        <h1>Categorías<span class="title-dot">.</span></h1>
+        <p class="subtitle">
+            Organizá las categorías que utilizan los productos del almacén.
+        </p>
+    </div>
+    <a class="action-primary" asp-action="Crear">＋ Nueva categoría</a>
+</div>
+
+@if (TempData["Exito"] is string exito)
+{
+    <div class="notice-success" role="status">✓ @exito</div>
+}
+
+<section class="panel product-panel" aria-label="Listado de categorías">
+    <form method="get" asp-action="Index" class="product-filters">
+        <label class="filter-search">
+            <span class="sr-only">Buscar categorías</span>
+            <input name="busqueda"
+                   value="@busqueda"
+                   placeholder="Buscar por nombre o descripción…" />
+        </label>
+        <button class="filter-button" type="submit">Buscar</button>
+        <a class="clear-filter" asp-action="Index">Limpiar</a>
+    </form>
+
+    <div class="table-scroll">
+        <table class="product-table">
+            <thead>
+                <tr>
+                    <th>CATEGORÍA</th>
+                    <th>DESCRIPCIÓN</th>
+                    <th>PRODUCTOS ASOCIADOS</th>
+                    <th><span class="sr-only">Acciones</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var categoria in Model)
+                {
+                    <tr>
+                        <td><strong>@categoria.Nombre</strong></td>
+                        <td>
+                            @(string.IsNullOrWhiteSpace(categoria.Descripcion)
+                                ? "Sin descripción"
+                                : categoria.Descripcion)
+                        </td>
+                        <td>@categoria.CantidadProductos</td>
+                        <td>
+                            <a class="edit-link"
+                               asp-action="Editar"
+                               asp-route-id="@categoria.Id">Editar →</a>
+                        </td>
+                    </tr>
+                }
+
+                @if (Model.Count == 0)
+                {
+                    <tr>
+                        <td colspan="4" class="no-results">
+                            No encontramos categorías con esa búsqueda.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="table-footer">
+        @Model.Count categorías encontradas
+        <span>Datos en memoria · demostración</span>
+    </div>
+</section>
