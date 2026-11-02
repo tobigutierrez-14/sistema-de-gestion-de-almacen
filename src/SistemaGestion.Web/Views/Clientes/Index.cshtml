@@ -1,0 +1,53 @@
+@model IReadOnlyList<ClienteFilaViewModel>
+@{
+    ViewData["Title"] = "Clientes";
+    ViewData["Seccion"] = "clientes";
+    var busqueda = ViewData["Busqueda"] as string ?? "";
+}
+<div class="page-heading product-heading">
+    <div>
+        <p class="eyebrow">CONTACTOS / CLIENTES</p>
+        <h1>Clientes<span class="title-dot">.</span></h1>
+        <p class="subtitle">Consultá y administrá los clientes del almacén.</p>
+    </div>
+    <a class="action-primary" asp-action="Crear">＋ Nuevo cliente</a>
+</div>
+@if (TempData["Exito"] is string exito)
+{
+    <div class="notice-success" role="status">✓ @exito</div>
+}
+<section class="panel product-panel" aria-label="Listado de clientes">
+    <form method="get" asp-action="Index" class="product-filters">
+        <label class="filter-search">
+            <span class="sr-only">Buscar clientes</span>
+            <input name="busqueda" value="@busqueda" placeholder="Buscar nombre, DNI, teléfono o correo…" />
+        </label>
+        <button class="filter-button" type="submit">Buscar</button>
+        <a class="clear-filter" asp-action="Index">Limpiar</a>
+    </form>
+    <div class="table-scroll">
+        <table class="product-table">
+            <thead>
+                <tr><th>CLIENTE</th><th>DNI</th><th>TELÉFONO</th><th>COMPRAS</th><th>TOTAL COMPRADO</th><th><span class="sr-only">ACCIONES</span></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var cliente in Model)
+                {
+                    <tr>
+                        <td><strong>@cliente.Nombre</strong><small>@(string.IsNullOrWhiteSpace(cliente.Email) ? "Sin correo" : cliente.Email)</small></td>
+                        <td>@cliente.Dni</td>
+                        <td>@(string.IsNullOrWhiteSpace(cliente.Telefono) ? "—" : cliente.Telefono)</td>
+                        <td>@cliente.Compras</td>
+                        <td>@cliente.TotalComprado.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-AR"))</td>
+                        <td><a class="edit-link" asp-action="Editar" asp-route-id="@cliente.Id">Editar →</a></td>
+                    </tr>
+                }
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="6" class="no-results">No hay clientes para mostrar. Registrá el primero o probá otra búsqueda.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="table-footer">@Model.Count clientes encontrados <span>Datos en memoria · demostración</span></div>
+</section>
