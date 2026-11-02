@@ -1,0 +1,61 @@
+@model ClienteFormViewModel
+@{
+    var editando = Model.Id > 0;
+    var titulo = editando ? "Editar cliente" : "Nuevo cliente";
+    ViewData["Title"] = titulo;
+    ViewData["Seccion"] = "clientes";
+}
+<div class="page-heading product-heading">
+    <div>
+        <p class="eyebrow">CONTACTOS / CLIENTES</p>
+        <h1>@titulo<span class="title-dot">.</span></h1>
+        <p class="subtitle">@(editando ? "Actualizá los datos de contacto." : "Registrá los datos del nuevo cliente.")</p>
+    </div>
+    <a class="clear-filter" asp-action="Index">← Volver al listado</a>
+</div>
+<form method="post" asp-action="@(editando ? "Editar" : "Crear")" asp-route-id="@(editando ? Model.Id : (int?)null)" class="panel product-form">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="validation-error"></div>
+    <div class="form-section-title">Información del cliente</div>
+    <div class="form-grid">
+        <div class="form-field">
+            <label asp-for="Nombre">Nombre completo *</label>
+            <input asp-for="Nombre" maxlength="120" placeholder="Ej. Lucía Fernández" autocomplete="name" />
+            <span asp-validation-for="Nombre"></span>
+        </div>
+        <div class="form-field">
+            <label asp-for="Dni">DNI *</label>
+            @if (editando)
+            {
+                <input asp-for="Dni" readonly aria-describedby="dniHint" />
+            }
+            else
+            {
+                <input asp-for="Dni" maxlength="12" inputmode="numeric" placeholder="Ej. 38111222" />
+            }
+            <span asp-validation-for="Dni"></span>
+        </div>
+        <div class="form-field">
+            <label asp-for="Telefono">Teléfono (opcional)</label>
+            <input asp-for="Telefono" maxlength="40" type="tel" autocomplete="tel" placeholder="Ej. 11 5555-0000" />
+            <span asp-validation-for="Telefono"></span>
+        </div>
+        <div class="form-field">
+            <label asp-for="Email">Correo electrónico (opcional)</label>
+            <input asp-for="Email" maxlength="160" type="email" autocomplete="email" placeholder="Ej. cliente@correo.com" />
+            <span asp-validation-for="Email"></span>
+        </div>
+    </div>
+    @if (editando)
+    {
+        <p class="form-hint" id="dniHint">El DNI no se puede modificar porque la clase Cliente no dispone de un método para actualizarlo.</p>
+    }
+    else
+    {
+        <p class="form-hint">Los campos marcados con * son obligatorios. Los datos se guardan temporalmente en memoria.</p>
+    }
+    <div class="form-actions">
+        <a class="action-secondary" asp-action="Index">Cancelar</a>
+        <button class="action-primary" type="submit">@(editando ? "Guardar cambios" : "Registrar cliente")</button>
+    </div>
+</form>
