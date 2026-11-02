@@ -3,7 +3,7 @@ using SistemaGestion.Web.ViewModels;
 
 namespace SistemaGestion.Web.Services;
 
-/// <summary>Demo sin persistencia: los cambios desaparecen al reiniciar el servidor.</summary>
+/// Demo sin persistencia: los cambios desaparecen al reiniciar el servidor.
 public sealed class CatalogoEnMemoria
 {
     private readonly object _sync = new();
@@ -16,6 +16,7 @@ public sealed class CatalogoEnMemoria
     ];
     private readonly List<(int Id, Producto Producto, string Descripcion, int StockMinimo)> _productos = [];
     private int _siguienteId = 1;
+    private int _siguienteCategoriaId = 5;
 
     public CatalogoEnMemoria()
     {
@@ -29,6 +30,71 @@ public sealed class CatalogoEnMemoria
     public IReadOnlyList<CategoriaOpcionViewModel> Categorias()
     {
         lock (_sync) return _categorias.Select(c => new CategoriaOpcionViewModel(c.obtenerId(), c.obtenerNombre())).ToArray();
+    }
+
+    public IReadOnlyList<CategoriaFilaViewModel> ListarCategorias()
+    {
+        lock (_sync)
+            return _categorias.Select(c => new CategoriaFilaViewModel(
+                c.obtenerId(), c.obtenerNombre(), c.obtenerDescripcion() ?? "",
+                _productos.Count(p => p.Producto.obtenerCategoria().obtenerId() == c.obtenerId())))
+                .OrderBy(c => c.Nombre).ToArray();
+    }
+
+    public CategoriaFormViewModel? ObtenerCategoria(int id)
+    {
+        lock (_sync)
+        {
+            var categoria = _categorias.FirstOrDefault(c => c.obtenerId() == id);
+            return categoria is null ? null : new CategoriaFormViewModel
+            {
+                Id = categoria.obtenerId(), Nombre = categoria.obtenerNombre(),
+                Descripcion = categoria.obtenerDescripcion() ?? ""
+            };
+        }
+    }
+
+    public bool NombreCategoriaOcupado(string nombre, int? idExcluir = null)
+    {
+        lock (_sync)
+            return _categorias.Any(c => c.obtenerId() != idExcluir &&
+                string.Equals(c.obtenerNombre().Trim(), nombre.Trim(), StringComparison.OrdinalIgnoreCase));
+    }
+
+    public void AgregarCategoria(CategoriaFormViewModel datos)
+    {
+        lock (_sync)
+        {
+            ValidarCategoria(datos.Nombre, datos.Descripcion);
+            if (NombreCategoriaOcupado(datos.Nombre))
+                throw new ArgumentException("Ya existe una categoría con ese nombre.");
+            var categoria = new Categoria(_siguienteCategoriaId, datos.Nombre.Trim(), datos.Descripcion.Trim());
+            _categorias.Add(categoria);
+            _siguienteCategoriaId++;
+        }
+    }
+
+    public bool ActualizarCategoria(int id, CategoriaFormViewModel datos)
+    {
+        lock (_sync)
+        {
+            var categoria = _categorias.FirstOrDefault(c => c.obtenerId() == id);
+            if (categoria is null) return false;
+            ValidarCategoria(datos.Nombre, datos.Descripcion);
+            if (NombreCategoriaOcupado(datos.Nombre, id))
+                throw new ArgumentException("Ya existe una categoría con ese nombre.");
+            // Los productos mantienen la referencia a esta misma instancia.
+            categoria.actualizarNombre(datos.Nombre.Trim());
+            categoria.actualizarDescripcion(datos.Descripcion.Trim());
+            return true;
+        }
+    }
+
+    private static void ValidarCategoria(string nombre, string descripcion)
+    {
+        if (string.IsNullOrWhiteSpace(nombre) || nombre.Trim().Length > 100 ||
+            (descripcion?.Length ?? 0) > 400)
+            throw new ArgumentException("Revisá el nombre y la descripción de la categoría.");
     }
 
     public IReadOnlyList<ProductoFilaViewModel> Productos()

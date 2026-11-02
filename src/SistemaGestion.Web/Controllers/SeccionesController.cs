@@ -7,7 +7,6 @@ public sealed class SeccionesController : Controller
     private static readonly IReadOnlyDictionary<string, string> Secciones =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["categorias"] = "Categorías",
             ["ventas"] = "Ventas",
             ["stock"] = "Movimientos de stock",
             ["clientes"] = "Clientes",
