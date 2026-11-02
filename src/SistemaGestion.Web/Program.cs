@@ -2,6 +2,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<SistemaGestion.Web.Services.CatalogoEnMemoria>();
 builder.Services.AddSingleton<SistemaGestion.Web.Services.ClientesEnMemoria>();
+builder.Services.AddSingleton<SistemaGestion.Web.Services.VentasEnMemoria>();
 
 var app = builder.Build();
 if (!app.Environment.IsDevelopment())

@@ -1,0 +1,66 @@
+@model VentasIndexViewModel
+@using SistemaGestion.Web.Models
+@{
+    ViewData["Title"] = "Ventas";
+    ViewData["Seccion"] = "ventas";
+    var cultura = System.Globalization.CultureInfo.GetCultureInfo("es-AR");
+}
+<div class="page-heading product-heading">
+    <div>
+        <p class="eyebrow">GESTIÓN / OPERACIONES</p>
+        <h1>Ventas<span class="title-dot">.</span></h1>
+        <p class="subtitle">Registrá operaciones, consultá el historial y controlá su impacto en el inventario.</p>
+    </div>
+    <a class="action-primary" asp-action="Crear">＋ Nueva venta</a>
+</div>
+@if (TempData["Exito"] is string exito)
+{
+    <div class="notice-success">@exito</div>
+}
+<div class="products-summary">
+    <article class="summary-tile"><span>Ventas completadas</span><strong>@Model.TotalVentas</strong></article>
+    <article class="summary-tile"><span>Importe vendido</span><strong>@Model.Ingresos.ToString("C", cultura)</strong>
+    </article>
+    <article class="summary-tile"><span>Operaciones registradas</span><strong>@Model.Ventas.Count</strong></article>
+</div>
+<section class="panel product-panel">
+    <div class="stock-section-heading">
+        <h2>Historial de ventas</h2><span>Registros temporales en memoria</span>
+    </div>
+    <div class="table-scroll">
+        <table class="product-table">
+            <thead>
+                <tr>
+                    <th>N.º</th>
+                    <th>FECHA</th>
+                    <th>CLIENTE</th>
+                    <th>MEDIO DE PAGO</th>
+                    <th>TOTAL</th>
+                    <th>ESTADO</th>
+                    <th>ACCIÓN</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var venta in Model.Ventas)
+                {
+                    <tr>
+                        <td><strong>#@venta.Id</strong></td>
+                        <td>@venta.Fecha.ToString("dd/MM/yyyy HH:mm", cultura)</td>
+                        <td>@venta.Cliente</td>
+                        <td>@venta.MedioPago</td>
+                        <td><strong>@venta.Total.ToString("C", cultura)</strong></td>
+                        <td><span class="stock-badge is-ok">@venta.Estado</span></td>
+                        <td><a class="edit-link" asp-action="Detalle" asp-route-id="@venta.Id">Ver detalle →</a></td>
+                    </tr>
+                }
+                @if (Model.Ventas.Count == 0)
+                {
+                    <tr>
+                        <td colspan="7" class="no-results">Todavía no hay ventas. Registrá la primera operación para
+                            comenzar.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>

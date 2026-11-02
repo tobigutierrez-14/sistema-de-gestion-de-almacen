@@ -4,7 +4,8 @@ public sealed class DashboardViewModel
 {
     public int TotalProductos { get; init; }
     public int ProductosBajoStock { get; init; }
-    // Ventas y movimientos aún no están implementados; no se muestran cifras inventadas.
+    public int VentasDelDia { get; set; }
+    public decimal IngresosDelDia { get; set; }
     public IReadOnlyList<ActividadReciente> Actividades { get; init; } = [];
     public IReadOnlyList<AlertaStock> Alertas { get; init; } = [];
 }
