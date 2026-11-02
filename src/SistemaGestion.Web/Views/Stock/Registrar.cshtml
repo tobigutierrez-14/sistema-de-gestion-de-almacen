@@ -1,0 +1,19 @@
+@model StockMovimientoFormViewModel
+@{
+ ViewData["Title"] = "Nuevo movimiento";
+ ViewData["Seccion"] = "stock";
+}
+<div class="page-heading"><div><p class="eyebrow">INVENTARIO / STOCK</p><h1>Registrar movimiento<span class="title-dot">.</span></h1><p class="subtitle">Registrá una entrada o salida de mercadería. El stock se actualizará automáticamente.</p></div><a asp-action="Index" class="clear-filter">← Volver a stock</a></div>
+<form method="post" asp-action="Registrar" class="panel product-form">
+ @Html.AntiForgeryToken()
+ <div asp-validation-summary="ModelOnly" class="validation-error" role="alert"></div>
+ <h2 class="form-section-title">Datos del movimiento</h2>
+ <div class="form-grid">
+  <div class="form-field full"><label asp-for="ProductoId">Producto *</label><select asp-for="ProductoId" asp-items="@(ViewData["Productos"] as IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)"><option value="0">Seleccioná un producto</option></select><span asp-validation-for="ProductoId"></span></div>
+  <div class="form-field"><label asp-for="Tipo">Tipo de movimiento *</label><select asp-for="Tipo"><option value="INGRESO">Ingreso de mercadería</option><option value="EGRESO">Egreso de mercadería</option></select><span asp-validation-for="Tipo"></span></div>
+  <div class="form-field"><label asp-for="Cantidad">Cantidad de unidades *</label><input asp-for="Cantidad" type="number" min="1" step="1" /><span asp-validation-for="Cantidad"></span></div>
+  <div class="form-field full"><label asp-for="Motivo">Motivo *</label><textarea asp-for="Motivo" rows="3" maxlength="250" placeholder="Ej. Recepción de mercadería del proveedor"></textarea><span asp-validation-for="Motivo"></span></div>
+ </div>
+ <p class="form-hint">Los egresos no pueden superar las unidades disponibles. Los movimientos son temporales hasta incorporar la base de datos.</p>
+ <div class="form-actions"><a class="action-secondary" asp-action="Index">Cancelar</a><button class="action-primary" type="submit">Confirmar movimiento</button></div>
+</form>

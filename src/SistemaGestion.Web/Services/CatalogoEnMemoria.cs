@@ -3,7 +3,7 @@ using SistemaGestion.Web.ViewModels;
 
 namespace SistemaGestion.Web.Services;
 
-/// Demo sin persistencia: los cambios desaparecen al reiniciar el servidor.
+/// <summary>Demo sin persistencia: los cambios desaparecen al reiniciar el servidor.</summary>
 public sealed class CatalogoEnMemoria
 {
     private readonly object _sync = new();
@@ -15,6 +15,7 @@ public sealed class CatalogoEnMemoria
         new(4, "Limpieza", "Artículos de limpieza")
     ];
     private readonly List<(int Id, Producto Producto, string Descripcion, int StockMinimo)> _productos = [];
+    private readonly List<MovimientoStock> _movimientos = [];
     private int _siguienteId = 1;
     private int _siguienteCategoriaId = 5;
 
@@ -97,6 +98,59 @@ public sealed class CatalogoEnMemoria
             throw new ArgumentException("Revisá el nombre y la descripción de la categoría.");
     }
 
+    public StockIndexViewModel ResumenStock(string? busqueda, int? categoriaId, string? estado, string? tipo)
+    {
+        lock (_sync)
+        {
+            var productos = _productos.Select(Fila).ToArray();
+            var filtrados = productos.AsEnumerable();
+            if (!string.IsNullOrWhiteSpace(busqueda))
+                filtrados = filtrados.Where(p => p.Nombre.Contains(busqueda.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (categoriaId.HasValue)
+            {
+                var categoria = _categorias.FirstOrDefault(c => c.obtenerId() == categoriaId.Value)?.obtenerNombre();
+                filtrados = filtrados.Where(p => categoria is not null && p.Categoria == categoria);
+            }
+            if (estado == "bajo") filtrados = filtrados.Where(p => p.StockBajo);
+            if (estado == "normal") filtrados = filtrados.Where(p => !p.StockBajo);
+            var movimientos = _movimientos.AsEnumerable().Reverse();
+            if (tipo is "INGRESO" or "EGRESO") movimientos = movimientos.Where(m => m.getTipo() == tipo);
+            return new StockIndexViewModel
+            {
+                Busqueda = busqueda ?? "", CategoriaId = categoriaId, Estado = estado ?? "todos", Tipo = tipo ?? "todos",
+                Categorias = Categorias(), Productos = filtrados.ToArray(),
+                TotalProductos = productos.Length, ProductosBajoStock = productos.Count(x => x.StockBajo),
+                TotalUnidades = productos.Sum(x => (long)x.Stock),
+                Movimientos = movimientos.Select(m => new MovimientoStockFilaViewModel(
+                    m.getId(), m.getProducto().obtenerNombre(), m.getTipo(), m.getCantidad(),
+                    m.getMotivo(), m.getFecha())).ToArray()
+            };
+        }
+    }
+
+    public void RegistrarMovimiento(StockMovimientoFormViewModel datos)
+    {
+        lock (_sync)
+        {
+            var producto = _productos.FirstOrDefault(p => p.Id == datos.ProductoId).Producto;
+            if (producto is null) throw new ArgumentException("Seleccioná un producto válido.");
+            if (datos.Tipo is not ("INGRESO" or "EGRESO")) throw new ArgumentException("Seleccioná un tipo válido.");
+            if (datos.Cantidad <= 0) throw new ArgumentException("La cantidad debe ser mayor a cero.");
+            if (string.IsNullOrWhiteSpace(datos.Motivo)) throw new ArgumentException("El motivo es obligatorio.");
+            if (datos.Tipo == "EGRESO" && !producto.HayStockDisponible(datos.Cantidad))
+                throw new InvalidOperationException("No hay stock suficiente para registrar el egreso.");
+
+            // Polimorfismo: cada subclase aplica la operación que le corresponde.
+            MovimientoStock movimiento = datos.Tipo == "INGRESO"
+                ? new IngresoStock(producto, datos.Cantidad, datos.Motivo)
+                : new EgresoStock(producto, datos.Cantidad, datos.Motivo);
+
+            // Si Aplicar() falla, no se agrega el movimiento al historial.
+            movimiento.Aplicar();
+            _movimientos.Add(movimiento);
+        }
+    }
+
     public IReadOnlyList<ProductoFilaViewModel> Productos()
     {
         lock (_sync) return _productos.Select(p => Fila(p)).ToArray();
@@ -117,7 +171,12 @@ public sealed class CatalogoEnMemoria
                 TotalProductos = _productos.Count,
                 ProductosBajoStock = bajoStock.Length,
                 Alertas = bajoStock.Select(p => new AlertaStock(
-                    p.Producto.obtenerNombre(), p.Producto.obtenerDescripcion(), p.Producto.obtenerStock())).ToArray()
+                    p.Producto.obtenerNombre(), p.Producto.obtenerDescripcion(), p.Producto.obtenerStock())).ToArray(),
+                Actividades = _movimientos.AsEnumerable().Reverse().Take(5)
+                    .Select(m => new ActividadReciente(
+                        $"{(m.getTipo() == "INGRESO" ? "Ingreso" : "Egreso")} · {m.getProducto().obtenerNombre()}",
+                        $"{m.getCantidad()} unidades · {m.getMotivo()}", m.getFecha(), "stock"))
+                    .ToArray()
             };
         }
     }
@@ -176,8 +235,16 @@ public sealed class CatalogoEnMemoria
             actual.actualizarDescripcion(datos.Descripcion.Trim());
             actual.actualizarStockMinimo(datos.StockMinimo);
             actual.actualizarCategoria(categoria);
-            if (diferencia > 0) actual.AumentarStock(diferencia);
-            else if (diferencia < 0) actual.DisminuirStock(-diferencia);
+            if (diferencia != 0)
+            {
+                var cantidad = Math.Abs(diferencia);
+                MovimientoStock movimiento = diferencia > 0
+                    ? new IngresoStock(actual, cantidad, "Ajuste desde edición de producto")
+                    : new EgresoStock(actual, cantidad, "Ajuste desde edición de producto");
+
+                movimiento.Aplicar();
+                _movimientos.Add(movimiento);
+            }
             _productos[index] = (id, actual, actual.obtenerDescripcion(), actual.obtenerStockMinimo());
             return true;
         }
