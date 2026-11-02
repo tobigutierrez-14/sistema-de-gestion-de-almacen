@@ -2,12 +2,14 @@
 
 ```mermaid
 classDiagram
+    direction LR
+
     class Persona {
         <<abstract>>
-        -int id
-        -string nombre
-        -string telefono
-        -string email
+        -int _id
+        -string _nombre
+        -string _telefono
+        -string _email
         +getId() int
         +getNombre() string
         +getTelefono() string
@@ -18,10 +20,10 @@ classDiagram
     }
 
     class Cliente {
-        -string dni
-        -List~Venta~ historialCompras
+        -string _dni
+        -List~Venta~ _historialCompras
         +getDni() string
-        +getHistorialCompras() List~Venta~
+        +getHistorialCompras() IReadOnlyList~Venta~
         +registrarCompra(Venta venta) void
         +calcularTotalCompras() decimal
     }
@@ -29,13 +31,10 @@ classDiagram
     class Proveedor {
     }
 
-    Persona <|-- Cliente
-    Persona <|-- Proveedor
-
     class Categoria {
-        -int id
-        -string nombre
-        -string descripcion
+        -int Id
+        -string Nombre
+        -string Descripcion
         +actualizarNombre(string nuevoNombre) void
         +actualizarDescripcion(string nuevaDescripcion) void
         +obtenerId() int
@@ -44,42 +43,83 @@ classDiagram
     }
 
     class Producto {
-        -int id
-        -string nombre
-        -string descripcion
-        -decimal precio
-        -int stock
-        -int stockMinimo
-        -Categoria categoria
+        -int Id
+        -string Nombre
+        -string Descripcion
+        -decimal Precio
+        -int Stock
+        -int StockMinimo
+        -Categoria Categoria
         +AumentarStock(int cantidad) void
         +DisminuirStock(int cantidad) void
         +HayStockDisponible(int cantidad) bool
         +NecesitaReposicion() bool
-        +actualizarPrecio(decimal nuevoPrecio) void
         +actualizarNombre(string nuevoNombre) void
         +actualizarDescripcion(string nuevaDescripcion) void
+        +actualizarPrecio(decimal nuevoPrecio) void
         +actualizarStockMinimo(int nuevoStockMinimo) void
         +actualizarCategoria(Categoria nuevaCategoria) void
         +obtenerStock() int
         +obtenerPrecio() decimal
         +obtenerNombre() string
         +obtenerCategoria() Categoria
+        +obtenerDescripcion() string
+        +obtenerStockMinimo() int
+    }
+
+    class Venta {
+        -int id
+        -DateTime fecha
+        -Cliente cliente
+        -List~DetalleVenta~ detalles
+        -MedioPago medioPago
+        -EstadoVenta estado
+        +AgregarDetalle(DetalleVenta detalle) void
+        +CalcularTotal() decimal
+        +ConfirmarVenta() void
+        +CancelarVenta() void
+        +ObtenerId() int
+        +ObtenerFecha() DateTime
+        +ObtenerCliente() Cliente
+        +ObtenerMedioPago() MedioPago
+        +ObtenerEstado() EstadoVenta
+        +ObtenerDetalles() IReadOnlyList~DetalleVenta~
+    }
+
+    class DetalleVenta {
+        -Producto _producto
+        -int _cantidad
+        -decimal _precioUnitario
+        +getProducto() Producto
+        +getCantidad() int
+        +getPrecioUnitario() decimal
+        +calcularSubtotal() decimal
+    }
+
+    class MedioPago {
+        -int Id
+        -TipoMedioPago Tipo
+        -string Descripcion
+        +actualizarDescripcion(string nuevaDescripcion) void
+        +obtenerId() int
+        +obtenerTipo() TipoMedioPago
+        +obtenerDescripcion() string
     }
 
     class MovimientoStock {
         <<abstract>>
-        -int id
-        -string fecha
-        -int cantidad
-        -string motivo
-        -Producto producto
+        -int _id
+        -string _fecha
+        -int _cantidad
+        -string _motivo
+        -Producto _producto
         +getId() int
         +getFecha() string
         +getCantidad() int
         +getMotivo() string
         +getProducto() Producto
-        +getTipo()* string
-        +Aplicar()* void
+        +getTipo() string*
+        +Aplicar() void*
     }
 
     class IngresoStock {
@@ -92,63 +132,32 @@ classDiagram
         +Aplicar() void
     }
 
-    MovimientoStock <|-- IngresoStock
-    MovimientoStock <|-- EgresoStock
+    class EstadoVenta {
+        <<enumeration>>
+        Pendiente
+        Completada
+        Cancelada
+    }
 
     class TipoMedioPago {
         <<enumeration>>
-        EFECTIVO
-        TARJETA_DEBITO
-        TARJETA_CREDITO
-        TRANSFERENCIA
+        Efectivo
+        TarjetaCredito
+        TarjetaDebito
+        Transferencia
     }
 
-    class EstadoVenta {
-        <<enumeration>>
-        PENDIENTE
-        CONFIRMADA
-        CANCELADA
-    }
+    Persona <|-- Cliente
+    Persona <|-- Proveedor
+    MovimientoStock <|-- IngresoStock
+    MovimientoStock <|-- EgresoStock
 
-    class MedioPago {
-        -int id
-        -TipoMedioPago tipo
-        -string descripcion
-        +actualizarDescripcion(string nuevaDescripcion) void
-        +obtenerId() int
-        +obtenerTipo() TipoMedioPago
-        +obtenerDescripcion() string
-    }
-
-    class Venta {
-        -int id
-        -DateTime fecha
-        -Cliente cliente
-        -List~DetalleVenta~ detalles
-        -MedioPago medioPago
-        -EstadoVenta estado
-        +agregarDetalle(DetalleVenta detalle) void
-        +calcularTotal() decimal
-        +confirmarVenta() void
-        +cancelarVenta() void
-        +obtenerDetalles() List~DetalleVenta~
-        +obtenerEstado() EstadoVenta
-        +obtenerCliente() Cliente
-    }
-
-    class DetalleVenta {
-        -Producto producto
-        -int cantidad
-        -decimal precioUnitario
-        +calcularSubtotal() decimal
-    }
-
-    Categoria "1" --> "0..*" Producto
-    Cliente "1" --> "0..*" Venta
-    Producto "1" <-- "0..*" DetalleVenta
-    Producto "1" <-- "0..*" MovimientoStock
-    Venta "1" *-- "1..*" DetalleVenta
-    Venta "0..*" --> "1" MedioPago
-    MedioPago --> TipoMedioPago
-    Venta --> EstadoVenta
-```
+    Categoria "1" <-- "0..*" Producto : clasifica
+    Cliente "1" <-- "0..*" Venta : comprador
+    Cliente "1" --> "0..*" Venta : historialCompras
+    MedioPago "1" <-- "0..*" Venta : pago
+    Venta "1" *-- "0..*" DetalleVenta : detalles
+    Producto "1" <-- "0..*" DetalleVenta : producto
+    Producto "1" <-- "0..*" MovimientoStock : producto
+    Venta --> EstadoVenta : estado
+    MedioPago --> TipoMedioPago : tipo
