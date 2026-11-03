@@ -3,7 +3,7 @@ using SistemaGestion.Web.ViewModels;
 
 namespace SistemaGestion.Web.Services;
 
-/// <summary>Demo sin persistencia: los cambios desaparecen al reiniciar el servidor.</summary>
+// Demo sin persistencia: los cambios desaparecen al reiniciar el servidor.
 public sealed class CatalogoEnMemoria
 {
     private readonly object _sync = new();
@@ -148,6 +148,30 @@ public sealed class CatalogoEnMemoria
             // Si Aplicar() falla, no se agrega el movimiento al historial.
             movimiento.Aplicar();
             _movimientos.Add(movimiento);
+        }
+    }
+
+    // Devuelve la referencia del modelo, no una copia para la vista.
+    public Producto? ObtenerProductoParaVenta(int id)
+    {
+        lock (_sync) return _productos.FirstOrDefault(p => p.Id == id).Producto;
+    }
+
+    // ConfirmarVenta ya descuenta stock: registrar EgresoStock SIN Aplicar() evita duplicar el egreso.
+    public void ConfirmarVentaConMovimientos(Venta venta)
+    {
+        lock (_sync)
+        {
+            if (venta is null) throw new ArgumentNullException(nameof(venta));
+            var agrupados = venta.ObtenerDetalles().GroupBy(d => d.getProducto())
+                .Select(g => (Producto: g.Key, Cantidad: g.Sum(d => d.getCantidad()))).ToArray();
+            if (agrupados.Any(x => !_productos.Any(p => ReferenceEquals(p.Producto, x.Producto))))
+                throw new InvalidOperationException("La venta contiene productos que no pertenecen al catálogo.");
+            // Construimos las entradas ANTES de afectar las existencias.
+            var registros = agrupados.Select(x => (MovimientoStock)new EgresoStock(
+                x.Producto, x.Cantidad, $"Venta N.º {venta.ObtenerId()}")).ToArray();
+            venta.ConfirmarVenta(); // Valida todo el stock primero y lo descuenta una sola vez.
+            _movimientos.AddRange(registros);
         }
     }
 

@@ -1,0 +1,93 @@
+@model VentaFormViewModel
+@using System.Globalization
+@using SistemaGestion.Web.ViewModels
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    ViewData["Title"] = "Nueva venta";
+    ViewData["Seccion"] = "ventas";
+    var clientes = ViewData["Clientes"] as IEnumerable<SelectListItem> ?? [];
+    var medios = ViewData["Medios"] as IEnumerable<SelectListItem> ?? [];
+    var productos = ViewData["ProductosCatalogo"] as IReadOnlyList<ProductoFilaViewModel> ?? [];
+}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">VENTAS / REGISTRO</p>
+        <h1>Nueva venta<span class="title-dot">.</span></h1>
+        <p class="subtitle">Buscá productos, agregalos al carrito y revisá el total antes de confirmar.</p>
+    </div>
+</div>
+<form asp-action="Crear" method="post" class="venta-layout" id="ventaForm">
+    @Html.AntiForgeryToken()
+    <div class="venta-main">
+        <div asp-validation-summary="ModelOnly" class="validation-error" role="alert"></div>
+        <section class="panel venta-panel">
+            <h2 class="form-section-title">Datos de la operación</h2>
+            <div class="form-grid">
+                <div class="form-field">
+                    <label asp-for="ClienteId">Cliente *</label>
+                    <select asp-for="ClienteId" asp-items="clientes"><option value="0">Seleccioná un cliente</option></select>
+                    <span asp-validation-for="ClienteId"></span>
+                </div>
+                <div class="form-field">
+                    <label asp-for="MedioPagoId">Medio de pago *</label>
+                    <select asp-for="MedioPagoId" asp-items="medios"><option value="0">Seleccioná un medio</option></select>
+                    <span asp-validation-for="MedioPagoId"></span>
+                </div>
+            </div>
+        </section>
+        <section class="panel venta-panel">
+            <h2 class="form-section-title">Agregar productos</h2>
+            <div class="venta-search-row">
+                <div class="form-field">
+                    <label for="buscarProducto">Buscar por nombre o categoría</label>
+                    <input id="buscarProducto" type="search" placeholder="Ej. arroz, bebidas, limpieza..." autocomplete="off" />
+                </div>
+                <div class="form-field">
+                    <label for="cantidadAgregar">Cantidad</label>
+                    <input id="cantidadAgregar" type="number" min="1" step="1" value="1" inputmode="numeric" />
+                </div>
+            </div>
+            <div class="venta-catalogo" id="ventaCatalogo" role="list" aria-label="Productos disponibles">
+                @foreach (var p in productos)
+                {
+                    <button type="button" class="venta-producto" role="listitem"
+                            data-id="@p.Id" data-nombre="@p.Nombre" data-precio="@p.Precio.ToString(CultureInfo.InvariantCulture)"
+                            data-stock="@p.Stock" data-categoria="@p.Categoria" disabled="@(p.Stock <= 0)">
+                        <span class="venta-producto-info"><strong>@p.Nombre</strong><small>@p.Categoria · Stock: @p.Stock</small></span>
+                        <span class="venta-producto-precio">$@p.Precio.ToString("N2", new CultureInfo("es-AR"))</span>
+                        <span class="venta-producto-agregar" aria-hidden="true">+</span>
+                    </button>
+                }
+            </div>
+            <p id="catalogoVacio" class="form-hint" hidden>No encontramos productos con esa búsqueda.</p>
+            <p id="ventaMensaje" class="venta-mensaje" role="status" aria-live="polite"></p>
+        </section>
+        <section class="panel venta-panel">
+            <div class="venta-section-header"><h2 class="form-section-title">Productos agregados</h2><span id="cantidadCarrito" class="venta-count">0 productos</span></div>
+            <p id="carritoVacio" class="venta-vacio">Todavía no agregaste productos. Buscá uno arriba para comenzar.</p>
+            <div id="ventaCarrito" class="venta-carrito" aria-live="polite"></div>
+            <div id="ventaCampos" aria-hidden="true">
+                @for (var i = 0; i < Model.Lineas.Count; i++)
+                {
+                    <input type="hidden" name="Lineas[@i].ProductoId" value="@Model.Lineas[i].ProductoId" />
+                    <input type="hidden" name="Lineas[@i].Cantidad" value="@Model.Lineas[i].Cantidad" />
+                }
+            </div>
+        </section>
+    </div>
+    <aside class="panel venta-resumen" aria-label="Resumen de la venta">
+        <p class="eyebrow">RESUMEN DE COMPRA</p>
+        <h2>Tu venta</h2>
+        <div class="venta-resumen-detalle"><span>Cliente</span><strong id="resumenCliente">Sin seleccionar</strong></div>
+        <div class="venta-resumen-detalle"><span>Medio de pago</span><strong id="resumenMedio">Sin seleccionar</strong></div>
+        <div class="venta-resumen-detalle"><span>Productos distintos</span><strong id="resumenItems">0</strong></div>
+        <div class="venta-resumen-detalle"><span>Unidades totales</span><strong id="resumenUnidades">0</strong></div>
+        <div class="venta-resumen-total"><span>Total estimado</span><strong id="resumenTotal">$0,00</strong></div>
+        <p class="form-hint">El importe definitivo se calcula en el servidor con los precios vigentes al confirmar.</p>
+        <button type="submit" class="action-primary venta-confirmar" id="confirmarVenta" disabled>Confirmar venta</button>
+        <a class="action-secondary venta-cancelar" asp-action="Index">Volver a ventas</a>
+    </aside>
+</form>
+@section Scripts {
+    <script src="~/js/ventas.js" asp-append-version="true"></script>
+}

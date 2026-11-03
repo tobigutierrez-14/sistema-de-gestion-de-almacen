@@ -1,0 +1,43 @@
+@model VentaDetalleViewModel
+@{
+    ViewData["Title"] = "Detalle de venta";
+    ViewData["Seccion"] = "ventas";
+    var cultura = System.Globalization.CultureInfo.GetCultureInfo("es-AR");
+}
+<div class="page-heading product-heading">
+    <div>
+        <p class="eyebrow">VENTAS / DETALLE</p>
+        <h1>Venta #@Model.Venta.Id<span class="title-dot">.</span></h1>
+        <p class="subtitle">@Model.Venta.Fecha.ToString("dd/MM/yyyy HH:mm", cultura) · @Model.Venta.Cliente ·
+            @Model.Venta.MedioPago</p>
+        </div><a class="action-secondary" asp-action="Index">Volver a ventas</a>
+    </div>
+    <section class="panel product-panel">
+        <div class="stock-section-heading">
+            <h2>Productos de la venta</h2><span class="stock-badge is-ok">@Model.Venta.Estado</span>
+        </div>
+        <div class="table-scroll">
+            <table class="product-table">
+                <thead>
+                    <tr>
+                        <th>PRODUCTO</th>
+                        <th>CANTIDAD</th>
+                        <th>PRECIO UNITARIO</th>
+                        <th>SUBTOTAL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model.Detalles)
+                    {
+                        <tr>
+                            <td><strong>@d.Producto</strong></td>
+                            <td>@d.Cantidad</td>
+                            <td>@d.PrecioUnitario.ToString("C", cultura)</td>
+                            <td><strong>@d.Subtotal.ToString("C", cultura)</strong></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="sales-total"><span>Total de venta</span><strong>@Model.Venta.Total.ToString("C", cultura)</strong></div>
+    </section>
