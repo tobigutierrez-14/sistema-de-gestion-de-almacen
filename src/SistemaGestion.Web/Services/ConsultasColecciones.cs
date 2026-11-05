@@ -1,7 +1,11 @@
 using SistemaGestion.Web.Models;
+
 namespace SistemaGestion.Web.Services;
 
-//Consultas sobre colecciones del dominio para las tareas T36-T39 de Trello. No modifican productos, ventas ni existencias.
+/// <summary>
+/// Consultas sobre colecciones del dominio para las tareas T36-T39.
+/// No modifican productos, ventas ni existencias.
+/// </summary>
 public static class ConsultasColecciones
 {
     public sealed record ResumenProducto(
@@ -12,7 +16,22 @@ public static class ConsultasColecciones
 
     public sealed record ProductoPorVentas(string Nombre, int UnidadesVendidas);
 
-    // T36 - Transformar cada Producto en una estructura de consulta (Select).
+    // Recorrido: filtrar los productos que cumplen una condición (Where).
+    // La condición se apoya en la regla del dominio Producto.NecesitaReposicion().
+    public static IReadOnlyList<Producto> FiltrarProductosConStockCritico(IEnumerable<Producto> productos)
+    {
+        ArgumentNullException.ThrowIfNull(productos);
+        return productos.Where(p => p.NecesitaReposicion()).ToArray();
+    }
+
+    // Recorrido: filtrar los productos que NO cumplen la condición (Where + !).
+    public static IReadOnlyList<Producto> FiltrarProductosSinStockCritico(IEnumerable<Producto> productos)
+    {
+        ArgumentNullException.ThrowIfNull(productos);
+        return productos.Where(p => !p.NecesitaReposicion()).ToArray();
+    }
+
+
     public static IReadOnlyList<ResumenProducto> TransformarProductos(IEnumerable<Producto> productos)
     {
         ArgumentNullException.ThrowIfNull(productos);
@@ -22,14 +41,16 @@ public static class ConsultasColecciones
         )).ToArray();
     }
 
-    // T37 - Encontrar el primer producto que necesita reposición (FirstOrDefault). Respeta el orden de la colección recibida y devuelve null si no existe.
+    // T37 - Encontrar el primer producto que necesita reposición (FirstOrDefault).
+    // Respeta el orden de la colección recibida y devuelve null si no existe.
     public static Producto? PrimerProductoConStockCritico(IEnumerable<Producto> productos)
     {
         ArgumentNullException.ThrowIfNull(productos);
         return productos.FirstOrDefault(p => p.NecesitaReposicion());
     }
 
-    // T38 - Una venta confirmada se cuenta UNA vez por cada categoría que aparezca en sus detalles, aunque incluya varios productos de esa categoría.
+    // T38 - Una venta confirmada se cuenta UNA vez por cada categoría
+    // que aparezca en sus detalles, aunque incluya varios productos de esa categoría.
     public static IReadOnlyList<VentasPorCategoria> ContabilizarVentasPorCategoria(IEnumerable<Venta> ventas)
     {
         ArgumentNullException.ThrowIfNull(ventas);
@@ -46,7 +67,8 @@ public static class ConsultasColecciones
             .ToArray();
     }
 
-    // T39 - Ordena los productos por unidades vendidas (descendente). Los productos sin ventas también aparecen, con cero unidades.
+    // T39 - Ordena los productos por unidades vendidas (descendente).
+    // Los productos sin ventas también aparecen, con cero unidades.
     public static IReadOnlyList<ProductoPorVentas> OrdenarProductosPorVentas(
         IEnumerable<Producto> productos, IEnumerable<Venta> ventas)
     {

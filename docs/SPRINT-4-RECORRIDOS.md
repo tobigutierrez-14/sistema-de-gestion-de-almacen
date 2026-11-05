@@ -4,10 +4,12 @@ Implementación aislada en `Services/ConsultasColecciones.cs`, sin alterar las c
 
 | Tarjeta | Operación LINQ | Descripción |
 | --- | --- | --- |
-| T36 Transformar colección de productos | `Select` | Proyecta `Producto` a `ResumenProducto`, con nombre, categoría, precio, stock y alerta de reposición. |
-| T37 Encontrar primer producto con stock crítico | `FirstOrDefault` | Devuelve el primer producto cuyo `NecesitaReposicion()` es verdadero; `null` cuando no hay coincidencias. |
-| T38 Contabilizar ventas por categoría | `Where`, `SelectMany`, `DistinctBy`, `GroupBy`, `Count` | Cuenta ventas **confirmadas** por categoría. Una venta cuenta una sola vez por categoría aunque tenga varios detalles de esa categoría. Clave: ID de categoría; valor: cantidad de ventas. |
-| T39 Ordenar productos por ventas | `GroupBy`, `ToDictionary`, `OrderByDescending`, `ThenBy` | Clasifica todos los productos por **unidades vendidas** (descendente).
+| T34. filtrar los que cumplen | `Where(p => p.NecesitaReposicion())` | Devuelve los productos que requieren reposición (stock en o por debajo del mínimo). |
+| T35.  filtrar los que no cumplen | `Where(p => !p.NecesitaReposicion())` | Devuelve los productos que no requieren reposición. |
+| T36. Transformar colección de productos | `Select` | Proyecta `Producto` a `ResumenProducto`, con nombre, categoría, precio, stock y alerta de reposición. |
+| T37. Encontrar primer producto con stock crítico | `FirstOrDefault` | Devuelve el primer producto cuyo `NecesitaReposicion()` es verdadero; `null` cuando no hay coincidencias. |
+| T38. Contabilizar ventas por categoría | `Where`, `SelectMany`, `DistinctBy`, `GroupBy`, `Count` | Cuenta ventas **confirmadas** por categoría. Una venta cuenta una sola vez por categoría aunque tenga varios detalles de esa categoría. Clave: ID de categoría; valor: cantidad de ventas. |
+| T39. Ordenar productos por ventas | `GroupBy`, `ToDictionary`, `OrderByDescending`, `ThenBy` | Clasifica todos los productos por **unidades vendidas** (descendente). Empates por nombre ascendente. Sin ventas: 0. |
 
 ## Archivos para integrar
 
@@ -16,7 +18,7 @@ Nuevos (solo estos tres):
 - `tests/SistemaGestion.Tests/ConsultasColeccionesTests.cs`
 - `docs/SPRINT-4-RECORRIDOS.md`
 
-**Archivos existentes modificados:** ninguno.
+Respecto del parche del Sprint 4 anterior: se actualizan `ConsultasColecciones.cs`, `ConsultasColeccionesTests.cs` y esta documentación. No se cambian modelos, controladores, vistas ni servicios preexistentes.
 
 ## Pruebas
 
@@ -25,7 +27,7 @@ dotnet build
 dotnet test
 ```
 
-Ocho pruebas nuevas cubren transformaciones y colección vacía; primer resultado y ausencia; deduplicación por categoría y ventas pendientes; orden por unidades, productos sin ventas y empates.
+Doce pruebas nuevas (ocho originales y cuatro complementarias) cubren transformaciones y colección vacía; primer resultado y ausencia; deduplicación por categoría y ventas pendientes; orden por unidades, productos sin ventas y empates.
 
 ## Observaciones
 

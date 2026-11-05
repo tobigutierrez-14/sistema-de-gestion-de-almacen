@@ -24,6 +24,46 @@ public class ConsultasColeccionesTests
     }
 
     [Fact]
+    public void t34_FiltrarProductosConStockCritico_DevuelveSoloLosQueNecesitanReposicion()
+    {
+        var critico = Producto(1, "Arroz", 3, 5);
+        var enLimite = Producto(2, "Aceite", 5, 5);
+        var normal = Producto(3, "Agua", 10, 5);
+
+        var resultado = ConsultasColecciones.FiltrarProductosConStockCritico([critico, normal, enLimite]);
+
+        Assert.Equal(new[] { critico, enLimite }, resultado);
+        Assert.Equal(3, critico.obtenerStock());
+    }
+
+    [Fact]
+    public void t34_FiltrarProductosConStockCritico_SinCoincidenciasDevuelveVacio()
+    {
+        var normal = Producto(1, "Agua", 10, 5);
+        Assert.Empty(ConsultasColecciones.FiltrarProductosConStockCritico([normal]));
+        Assert.Empty(ConsultasColecciones.FiltrarProductosConStockCritico([]));
+    }
+
+    [Fact]
+    public void t35_FiltrarProductosSinStockCritico_ExcluyeLosQueNecesitanReposicion()
+    {
+        var critico = Producto(1, "Arroz", 3, 5);
+        var enLimite = Producto(2, "Aceite", 5, 5);
+        var normal = Producto(3, "Agua", 10, 5);
+
+        var resultado = ConsultasColecciones.FiltrarProductosSinStockCritico([critico, normal, enLimite]);
+
+        Assert.Equal(new[] { normal }, resultado);
+    }
+
+    [Fact]
+    public void t35_FiltrarProductosSinStockCritico_SinCoincidenciasDevuelveVacio()
+    {
+        var critico = Producto(1, "Arroz", 3, 5);
+        Assert.Empty(ConsultasColecciones.FiltrarProductosSinStockCritico([critico]));
+        Assert.Empty(ConsultasColecciones.FiltrarProductosSinStockCritico([]));
+    }
+    [Fact]
     public void T36_TransformaProductosSinModificarOrigen()
     {
         var p = Producto(1, "Arroz", 3, 5);
