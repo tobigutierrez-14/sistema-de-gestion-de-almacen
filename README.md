@@ -121,7 +121,7 @@ Nota: la estructura muestra la organización prevista del modelo. Algunos archiv
 - `README.md`: contiene la información general y las instrucciones del proyecto.
 - `.github/workflows`: contiene el flujo de Integración Continua (CI) que compila y corre las pruebas automáticamente.
 
-Program.cs: configura e inicia l
+
 
 ---
 
