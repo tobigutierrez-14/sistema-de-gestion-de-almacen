@@ -9,6 +9,11 @@ public sealed class ClientesEnMemoria
     private readonly object _sync = new();
     private readonly List<Cliente> _clientes = [];
 
+    public ClientesEnMemoria()
+    {
+        _clientes.Add(new Cliente("Juan Pérez", "12345678", "555-1234", "juan.perez@example.com"));
+    }
+
     public IReadOnlyList<(int Id, string Nombre, string Dni)> OpcionesVentas()
     {
         lock (_sync) return _clientes.OrderBy(c => c.getNombre())
